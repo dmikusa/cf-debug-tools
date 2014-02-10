@@ -11,4 +11,5 @@ There's two ways that this can be used.  First by using the ```--command``` argu
 Ex:
 
 ```
+curl -s https://raw.github.com/dmikusa-pivotal/cf-debug-console/master/debug.sh | bash
 ```
