@@ -18,7 +18,11 @@ cf push -c 'curl -s https://raw.github.com/dmikusa-pivotal/cf-debug-tools/master
 
 This will instruct CF to run this command instead of your application.  Once run, the script will download websocketd and enable to you connect to it instead.  To connect access the application in your browser.  From there you'll see the web console and be able to connect.
 
-  Ex:  https://<host>.<domain>:4443/bash.sh
+Ex:
+
+```
+https://<host>.<domain>:4443/bash.sh
+```
 
 Note that you're required to use HTTPS and access over port 4443, otherwise the WebSocket connection won't work.
 
