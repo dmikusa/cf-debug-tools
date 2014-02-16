@@ -40,4 +40,5 @@ This should run your normal command and if it fails, download and run the debug 
 
 It's important to realize that this script is not secure in any way.  It simply opens up the console instead of your application.  Just as you can access this console, so can anyone else with the URL.  As such, be careful when and how you use this.
 
-
+## License
+The cf-debug-tools project is released under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
