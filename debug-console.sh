@@ -26,19 +26,25 @@
 
 # Download websocketd, supports Mac OSX or Linux.  Mac is supported for development.
 if [ ! -f "./websocketd" ]; then
+    URL_BASE="https://github.com/joewalnes/websocketd/releases/download/v0.2.9"
     if [ `uname -s` == 'Darwin' ]; then
-        DOWNLOAD_URL="http://download.websocketd.com/releases/websocketd/0.2.8/darwin_amd64/websocketd"
+        ARCHIVE="websocketd-0.2.9-darwin_amd64.zip"
     fi
     if [ `uname -s` == 'Linux' ]; then
         if [ `uname -m` == 'x86_64' ]; then
-            DOWNLOAD_URL="http://download.websocketd.com/releases/websocketd/0.2.8/linux_amd64/websocketd"
+            ARCHIVE="websocketd-0.2.9-linux_amd64.zip"
         else
-            DOWNLOAD_URL="http://download.websocketd.com/releases/websocketd/0.2.8/linux_386/websocketd"
+            ARCHIVE="websocketd-0.2.9-linux_386.zip"
         fi
     fi
     # Download websocketd
+    DOWNLOAD_URL="$URL_BASE/$ARCHIVE"
+    echo "Downloading websocketd from [$DOWNLOAD_URL]"
     curl -s -L -O "$DOWNLOAD_URL"
+    # Extract files
+    unzip -p "$ARCHIVE" websocketd > websocketd
     chmod 755 websocketd
+    rm "$ARCHIVE"
 fi
 
 # Create a bash script that websocketd will use to run
@@ -52,4 +58,9 @@ EOF
 chmod 755 bash.sh
 
 # Start web socketd
+echo "Running websocketd on port [${PORT:-4443}]..."
 ./websocketd --port=${PORT:-4443} --dir=. --devconsole
+
+# Clean Up
+rm websocketd
+rm bash.sh
