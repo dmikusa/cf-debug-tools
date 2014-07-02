@@ -52,4 +52,4 @@ EOF
 chmod 755 bash.sh
 
 # Start web socketd
-./websocketd --port=$PORT --dir=. --devconsole
+./websocketd --port=${PORT:-4443} --dir=. --devconsole
