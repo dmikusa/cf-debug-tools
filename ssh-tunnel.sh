@@ -51,6 +51,15 @@ if [ "$SERVICE_PORT" == "" ]; then
     export SERVICE_PORT=$PORT
 fi
 
+# Make sure PUBLIC_SERVER is defined
+if [ "$PUBLIC_SERVER" == "" ]; then
+    echo
+    echo "You must define the location of your public server.  Set this in the"
+    echo "environment variable PUBLIC_SERVER. <user@>host<:port>"
+    echo
+    exit -1
+fi
+
 # Connects via SSH to $PUBLIC_SERVER (<user@>host<:port>) and opens a reverse tunnel.
 #   The tunnel connects $LOCAL_PORT on the public server to $SERVICE_PORT 
 #   in the application container.
