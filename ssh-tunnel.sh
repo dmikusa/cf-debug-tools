@@ -7,13 +7,19 @@
 set -e
 
 # Look for .ssh directory in application, move it to /home/vcap/.ssh
-find /home/vcap/app -name .ssh -type d -exec mv -n {} /home/vcap \;
-if [ ! -d /home/vcap/.ssh ]; then
+SSH_FOLDER=$(find /home/vcap/app -name .ssh -type d | head -n 1)
+if [ "$SSH_FOLDER" == "" ]; then
+    echo
     echo "You need to include a '.ssh' directory with your application!"
     echo "This needs to contain the private and public key for the user"
     echo "that will connect to your SSH server."
     echo
     exit -1
+elif [ "$SSH_FOLDER" != "/home/vcap/.ssh" ]; then
+    echo "Moved [$SSH_FOLDER] to /home/vcap/.ssh, where it's expected."
+    mv "$SSH_FOLDER" /home/vcap
+else
+    echo "SSH Folder alread exists at [$SSH_FOLDER]"
 fi
 
 # Find and fix permissions on private keys
