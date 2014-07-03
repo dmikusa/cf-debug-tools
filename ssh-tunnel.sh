@@ -4,6 +4,7 @@
 #  Author:  Daniel Mikusa <dmikusa@gopivotal.com>
 #    Date:  7-3-2014
 #
+set -e
 
 # Look for .ssh directory in application, move it to /home/vcap/.ssh
 find /home/vcap/app -name .ssh -type d -exec mv -n {} /home/vcap \;
