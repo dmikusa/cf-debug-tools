@@ -46,6 +46,11 @@ if [ "$LOCAL_BASE_PORT" == "" ]; then
 fi
 LOCAL_PORT=$(python -c "import json, os; print json.loads(os.environ['VCAP_APPLICATION'])['instance_index'] + int(os.environ['LOCAL_BASE_PORT'])")
 
+# Make sure $SERVICE_PORT is set, default to $PORT
+if [ "$SERVICE_PORT" == "" ]; then
+    export SERVICE_PORT=$PORT
+fi
+
 # Connects via SSH to $PUBLIC_SERVER (<user@>host<:port>) and opens a reverse tunnel.
 #   The tunnel connects $LOCAL_PORT on the public server to $SERVICE_PORT 
 #   in the application container.
