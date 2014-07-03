@@ -30,8 +30,14 @@ for FILE in /Users/danielmikusa/Downloads/node-test/.ssh/*; do
         break
     fi
 done
-echo "Found public key [$PUB_KEY] and private key [$PRIV_KEY]."
-chmod 600 "$PRIV_KEY"
+if [ "$PUB_KEY" == "" ] || [ "$PRIV_KEY" == "" ]; then
+    echo "Failed to find public or private keys."
+    echo "Found -> [$PUB_KEY] [$PRIV_KEY]"
+    exit -1
+else
+    echo "Found public key [$PUB_KEY] and private key [$PRIV_KEY]."
+    chmod 600 "$PRIV_KEY"
+fi
 
 # Calculate local port
 #  This checks env var LOCAL_BASE_PORT and increments the instance index onto it
