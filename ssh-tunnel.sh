@@ -23,7 +23,7 @@ else
 fi
 
 # Find and fix permissions on private keys
-for FILE in /Users/danielmikusa/Downloads/node-test/.ssh/*; do
+for FILE in /home/vcap/.ssh/*; do
     if [[ "$FILE" == *.pub ]]; then
         PUB_KEY=$FILE
         PRIV_KEY="$(dirname "$FILE")/$(basename "$FILE" .pub)"
