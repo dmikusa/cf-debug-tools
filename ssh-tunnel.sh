@@ -7,7 +7,7 @@
 set -e
 
 # Look for .ssh directory in application, move it to /home/vcap/.ssh
-SSH_FOLDER=$(find /home/vcap/app -name .ssh -type d | head -n 1)
+SSH_FOLDER=$(find /home/vcap -name .ssh -type d | head -n 1)
 if [ "$SSH_FOLDER" == "" ]; then
     echo
     echo "You need to include a '.ssh' directory with your application!"
