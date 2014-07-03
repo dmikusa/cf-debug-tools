@@ -1,9 +1,28 @@
 #!/bin/bash
-#  Helper script for setting up an SSH Tunnel out of your CF app
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing,
+#  software distributed under the License is distributed on an
+#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#  KIND, either express or implied.  See the License for the
+#  specific language governing permissions and limitations
+#  under the License.
+
+# --------------------------------------------------------------
+# Helper script for setting up an SSH Tunnel out of your CF app
 #
 #  Author:  Daniel Mikusa <dmikusa@gopivotal.com>
 #    Date:  7-3-2014
-#
+# --------------------------------------------------------------
 set -e
 
 # Look for .ssh directory in application, move it to /home/vcap/.ssh
@@ -68,3 +87,5 @@ fi
 #   $LOCAL_PORT is calculated based on $LOCAL_BASE_PORT, which is user defined.
 ssh -i "$PRIV_KEY" -oStrictHostKeyChecking=no -f -N -T -R"$LOCAL_PORT:localhost:$SERVICE_PORT" "$PUBLIC_SERVER"
 echo "Connected!  To access go to localhost:$LOCAL_PORT on your public server [$PUBLIC_SERVER]."
+
+#TODO: watch SSH tunnel to see if it goes down.  If it does, try restarting.
