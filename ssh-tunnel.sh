@@ -43,12 +43,14 @@ fi
 #  This checks env var LOCAL_BASE_PORT and increments the instance index onto it
 if [ "$LOCAL_BASE_PORT" == "" ]; then
     export LOCAL_BASE_PORT=31337
+    echo "No LOCAL_BASE_PORT defined, defaulting to 31337."
 fi
 LOCAL_PORT=$(python -c "import json, os; print json.loads(os.environ['VCAP_APPLICATION'])['instance_index'] + int(os.environ['LOCAL_BASE_PORT'])")
 
 # Make sure $SERVICE_PORT is set, default to $PORT
 if [ "$SERVICE_PORT" == "" ]; then
     export SERVICE_PORT=$PORT
+    echo "No SERVICE_PORT defined, defaulting to application on [$PORT]"
 fi
 
 # Make sure PUBLIC_SERVER is defined
@@ -65,3 +67,4 @@ fi
 #   in the application container.
 #   $LOCAL_PORT is calculated based on $LOCAL_BASE_PORT, which is user defined.
 ssh -i "$PRIV_KEY" -oStrictHostKeyChecking=no -f -N -T -R"$LOCAL_PORT:localhost:$SERVICE_PORT" "$PUBLIC_SERVER"
+echo "Connected!  To access go to localhost:$LOCAL_PORT on your public server [$PUBLIC_SERVER]."
