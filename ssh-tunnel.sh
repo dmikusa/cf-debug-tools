@@ -58,19 +58,19 @@ else
     chmod 600 "$PRIV_KEY"
 fi
 
+# Make sure $SERVICE_PORTS is set, default to $PORT
+if [ "$SERVICE_PORTS" == "" ]; then
+    export SERVICE_PORTS=$PORT
+    echo "No SERVICE_PORTS defined, defaulting to application on [$PORT]"
+fi
+
 # Calculate local port
 #  This checks env var LOCAL_BASE_PORT and increments the instance index onto it
 if [ "$LOCAL_BASE_PORT" == "" ]; then
     export LOCAL_BASE_PORT=31337
     echo "No LOCAL_BASE_PORT defined, defaulting to 31337."
 fi
-LOCAL_PORT=$(python -c "import json, os; print json.loads(os.environ['VCAP_APPLICATION'])['instance_index'] + int(os.environ['LOCAL_BASE_PORT'])")
-
-# Make sure $SERVICE_PORTS is set, default to $PORT
-if [ "$SERVICE_PORTS" == "" ]; then
-    export SERVICE_PORTS=$PORT
-    echo "No SERVICE_PORTS defined, defaulting to application on [$PORT]"
-fi
+LOCAL_PORT=$(python -c "import json, os; print json.loads(os.environ['VCAP_APPLICATION'])['instance_index'] * len(os.environ['SERVICE_PORTS'].split(' ')) + int(os.environ['LOCAL_BASE_PORT'])")
 
 # Make sure PUBLIC_SERVER is defined
 if [ "$PUBLIC_SERVER" == "" ]; then
@@ -88,6 +88,7 @@ fi
 for SERVICE_PORT in $SERVICE_PORTS; do
     ssh -i "$PRIV_KEY" -oStrictHostKeyChecking=no -f -N -T -R"$LOCAL_PORT:localhost:$SERVICE_PORT" "$PUBLIC_SERVER"
     echo "Connected!  To access go to localhost:$LOCAL_PORT on your public server [$PUBLIC_SERVER]."
+    LOCAL_PORT=$(($LOCAL_PORT + 1))
 done
 
 #TODO: watch SSH tunnel to see if it goes down.  If it does, try restarting.
