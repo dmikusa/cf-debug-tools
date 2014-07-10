@@ -66,10 +66,10 @@ if [ "$LOCAL_BASE_PORT" == "" ]; then
 fi
 LOCAL_PORT=$(python -c "import json, os; print json.loads(os.environ['VCAP_APPLICATION'])['instance_index'] + int(os.environ['LOCAL_BASE_PORT'])")
 
-# Make sure $SERVICE_PORT is set, default to $PORT
-if [ "$SERVICE_PORT" == "" ]; then
-    export SERVICE_PORT=$PORT
-    echo "No SERVICE_PORT defined, defaulting to application on [$PORT]"
+# Make sure $SERVICE_PORTS is set, default to $PORT
+if [ "$SERVICE_PORTS" == "" ]; then
+    export SERVICE_PORTS=$PORT
+    echo "No SERVICE_PORTS defined, defaulting to application on [$PORT]"
 fi
 
 # Make sure PUBLIC_SERVER is defined
@@ -82,10 +82,12 @@ if [ "$PUBLIC_SERVER" == "" ]; then
 fi
 
 # Connects via SSH to $PUBLIC_SERVER (<user@>host<:port>) and opens a reverse tunnel.
-#   The tunnel connects $LOCAL_PORT on the public server to $SERVICE_PORT 
+#   The tunnel connects $LOCAL_PORT on the public server to $SERVICE_PORTS 
 #   in the application container.
 #   $LOCAL_PORT is calculated based on $LOCAL_BASE_PORT, which is user defined.
-ssh -i "$PRIV_KEY" -oStrictHostKeyChecking=no -f -N -T -R"$LOCAL_PORT:localhost:$SERVICE_PORT" "$PUBLIC_SERVER"
-echo "Connected!  To access go to localhost:$LOCAL_PORT on your public server [$PUBLIC_SERVER]."
+for SERVICE_PORT in $SERVICE_PORTS; do
+    ssh -i "$PRIV_KEY" -oStrictHostKeyChecking=no -f -N -T -R"$LOCAL_PORT:localhost:$SERVICE_PORT" "$PUBLIC_SERVER"
+    echo "Connected!  To access go to localhost:$LOCAL_PORT on your public server [$PUBLIC_SERVER]."
+done
 
 #TODO: watch SSH tunnel to see if it goes down.  If it does, try restarting.

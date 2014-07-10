@@ -97,7 +97,7 @@ The following variables are optional.
 |      Variable     |   Explanation                                        |
 ------------------- | -----------------------------------------------------|
 | LOCAL_BASE_PORT   | The first local port to use.  This is determines what port you'll connect to on the public server to access the tunneled service.  Because multiple applications can be connecting back to one server the local port used needs to be unique.  This value specifies where the script will start.  Incremented to this value is the application's instance id.  For example, if you start at 10000 and have three instances, they should be available on 10000, 10001 and 10002.  The default is 31337. Never set this value to anything less than 1024 as the script won't have permissions to bind to that port. |
-| SERVICE_PORT      | This is the port which the reverse tunnel will connect to, or in other words it's the port where the service you'd like to access is listening.  This defaults to $PORT which means you'll be able to access your application over the tunnel.  Generally you'd set this to something different. |
+| SERVICE_PORTS     | This is the port or ports (space separated list) which the reverse tunnel will connect to, or in other words it's the port where the service you'd like to access is listening.  This defaults to $PORT which means you'll be able to access your application over the tunnel.  Generally you'd set this to something different. |
 
 ### Additional Notes
 
