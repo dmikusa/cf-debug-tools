@@ -13,7 +13,7 @@ The easiest way to use this script is with the ```--command``` argument of cf.
 Ex:
 
 ```
-cf push -c 'curl -s https://raw.github.com/dmikusa-pivotal/cf-debug-tools/master/debug-console.sh | bash' ...
+cf push -c 'curl -s https://raw.githubusercontent.com/dmikusa-pivotal/cf-debug-tools/master/debug-console.sh | bash' ...
 ```
 
 This will instruct CF to run this command instead of your application.  Once run, the script will download websocketd and enable to you connect to it instead.  To connect access the application in your browser.  From there you'll see the web console and be able to connect.
@@ -31,7 +31,7 @@ Another way to use this script would be to set it up to run on failure.
 Ex:
 
 ```
-cf push -c '<your normal command> || curl -s https://raw.github.com/dmikusa-pivotal/cf-debug-tools/master/debug-console.sh | bash'
+cf push -c '<your normal command> || curl -s https://raw.githubusercontent.com/dmikusa-pivotal/cf-debug-tools/master/debug-console.sh | bash'
 ```
 
 This should run your normal command and if it fails, download and run the debug console.  The advantage here is that you can poke around in the environment after your application has failed, perhaps giving you the chance to see why it failed.
