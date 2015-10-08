@@ -103,5 +103,41 @@ The following variables are optional.
 
 It's important to contemplate the security risks of using this script with your application.  You're packaging a non-password protected private key with your application.  If someone else were to get this key, he or she could connect to your SSH server in the same way that this script does.  Because of this it would be a good idea to rotate the keys often, revoke old keys from your `authorized_keys` file and to limit the access of the user on your SSH server (possibly even run it in a VM or container with nothing else).
 
+## Use profile.d to dump the JVM Native Memory
+
+By using [start_dump.sh](start_dump.sh) and [dump.sh](dump.sh) along with [.profile.d](https://devcenter.heroku.com/articles/profiled#order), developers can do a regular native memory dump on JVM and print it on console.
+
+### Todo
+
+* Enable native memory tracking by setting JAVA_OPTS with -XX:NativeMemoryTracking=summary
+* Create a folder named with **.profile.d** in the home directory of the application
+* Put start_dump.sh inside of **.profile.d**
+* Put dump.sh in the home directory of the application
+* cf push from home directory of the application
+
+Sample File structure:
+
+```
+  .profile.d
+    - start_dump.sh
+  WEB-INF
+    - .....
+  dump.sh  
+```
+
+manifest:
+
+```
+---
+applications:
+- name: memory_test
+  memory: 800m
+  instances: 1
+  path: .
+  buildpack: https://github.com/cloudfoundry/java-buildpack#v3.2
+  env:
+    JAVA_OPTS: -Djava.security.egd=file:///dev/urandom -XX:NativeMemoryTracking=summary -XX:+PrintHeapAtGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps
+```
+
 ## License
 The cf-debug-tools project is released under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
