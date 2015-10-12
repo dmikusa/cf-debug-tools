@@ -40,6 +40,10 @@ This should run your normal command and if it fails, download and run the debug 
 
 It's important to realize that this script is not secure in any way.  It simply opens up the console instead of your application.  Just as you can access this console, so can anyone else with the URL.  As such, be careful when and how you use this.
 
+### Other Options
+
+If you're looking for a shell running on CF, you could also look at [this example](https://github.com/dmikusa-pivotal/cf-ex-gotty).  It shows how to run [gotty](https://github.com/yudai/gotty) on CF.
+
 ## SSH Tunnel
 
 This script when run will make an outbound SSH connection to a server of your choice and setup a reverse tunnel so that you can connect from your server to a port in the application's environment.  This can be used to facilitate access to the application environment that would otherwise not be possible.  For example, to connect and run a shell, connect to a hidden port, get metrics and stats or even debug your application.
