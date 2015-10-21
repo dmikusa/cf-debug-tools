@@ -143,5 +143,13 @@ applications:
     JAVA_OPTS: -Djava.security.egd=file:///dev/urandom -XX:NativeMemoryTracking=summary -XX:+PrintHeapAtGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps
 ```
 
+### Logs
+
+When you run the dump.sh script and grab the Java NMT logs, there's a lot of output that get's generated.  The easiest way to handle this is to run `cf logs app-name > app-name.log` in a terminal before you start the app.  This will capture a complete set of logs from app startup until you see a problem.
+
+With that log file, you can use the build-graph.py script also included make sense of the logs.  The script will parse through and process the Java NMT stats, the output from top and any crashes it detects.  It will then generate graphs to show the memory usage as reported by those tools over time.
+
+To run the script, simply run `python build-graph.py <log-file-name>`.  Please note that the script requires matplotlib and python-dateutils.  These can be installed by running `pip install matplotlib python-dateutils`.
+
 ## License
 The cf-debug-tools project is released under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
