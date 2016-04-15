@@ -149,7 +149,7 @@ When you run the dump.sh script and grab the Java NMT logs, there's a lot of out
 
 With that log file, you can use the build-graph.py script also included make sense of the logs.  The script will parse through and process the Java NMT stats, the output from top and any crashes it detects.  It will then generate graphs to show the memory usage as reported by those tools over time.
 
-To run the script, simply run `python build-graph.py <log-file-name>`.  Please note that the script requires matplotlib and python-dateutils.  These can be installed by running `pip install matplotlib python-dateutils`.
+To run the script, simply run `python build-graph.py <log-file-name> <pid>` (you can find the pid in your log file, look at the top output).  Please note that the script requires matplotlib and python-dateutils.  These can be installed by running `pip install matplotlib python-dateutils`.
 
 ## License
 The cf-debug-tools project is released under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
