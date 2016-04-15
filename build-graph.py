@@ -63,7 +63,12 @@ def read_data(filename, pid):
                 crash_date = parse(line.split(' ')[0])
                 crashes.append(((crash_date - start_date).seconds,
                                 m.group(1), m.group(2), m.group(3)))
-    return (x_series, jvm_totals, top_totals, crashes, start_date)
+    max_len = len(x_series)
+    return (x_series,
+            jvm_totals[0:max_len],
+            top_totals[0:max_len],
+            crashes[0:max_len],
+            start_date)
 
 
 def fix_jvm(fig):
