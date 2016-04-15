@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from dateutil.parser import parse
 
 
-def read_data(filename):
+def read_data(filename, pid):
     """Read `cf logs` output when dump.sh is running"""
     # data storage
     jvm_totals = []
@@ -26,8 +26,8 @@ def read_data(filename):
     jnmt_pattern = re.compile(
         'Total: reserved=(-?\+?\d+[KM]B) (-?\+?\d+[KM]B), '
         'committed=(-?\+?\d+[KM]B) (-?\+?\d+[KM]B)')
-    top_pattern = re.compile('OUT\s+35\s+vcap\s+10\s+-10\s+(\d+?)'
-                             '\s+(.*?)\s+(\d+?)\s+\w')
+    top_pattern = re.compile('OUT\s+%s\s+vcap\s+10\s+-10\s+(\d+?)'
+                             '\s+(.*?)\s+(\d+?)\s+\w' % pid)
     crash_pattern = re.compile('"reason"=>"(.*?)", "exit_status"=>(-?\d+?),'
                                ' "exit_description"=>"(.*?)", "')
 
@@ -50,8 +50,7 @@ def read_data(filename):
             event_date = parse(line.split(' ')[0])
             x_series.append((event_date - start_date).seconds)
         # find `top` output for jvm process
-        # TODO: need to find the pid some way
-        if line.find('OUT    35 vcap      10 -10') != -1:
+        if line.find('OUT    %s vcap      10 -10' % pid) != -1:
             m = top_pattern.search(line.strip())
             if m:
                 top_totals.append(m.groups())
@@ -118,20 +117,24 @@ def dump_data_to_csv(xseries, yseries, crashes):
             data = []
             data.append(str(xpt))
             for item in yseries:
-                data.append(str(item[i]))
+                try:
+                    data.append(str(item[i]))
+                except IndexError:
+                    print "Row [%s] missing info.  Should have record [%d]" % (
+                        item, i)
             fout.write(",".join(data) + "\n")
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 3:
         print
         print "USAGE:"
-        print "\tpython build-dump-graphs.py <data-file>"
+        print "\tpython build-dump-graphs.py <data-file> <pid>"
         print
         sys.exit(-1)
 
     (x_series, jvm_totals, top_totals, crashes, start_date) = \
-        read_data(sys.argv[1])
+        read_data(sys.argv[1], sys.argv[2])
 
     print "Generating graphs..."
     print "   Found %d data points." % len(x_series)
