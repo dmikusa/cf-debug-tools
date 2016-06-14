@@ -138,10 +138,11 @@ applications:
   memory: 800m
   instances: 1
   path: .
-  buildpack: https://github.com/cloudfoundry/java-buildpack#v3.2
   env:
     JAVA_OPTS: -Djava.security.egd=file:///dev/urandom -XX:NativeMemoryTracking=summary -XX:+PrintHeapAtGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps
 ```
+
+Note: If **dump.sh** is setup to look for a WAR file deployed to Tomcat.  If you're using Spring Boot, you need to adjust [this line](https://github.com/dmikusa-pivotal/cf-debug-tools/blob/master/dump.sh#L11) so that it finds your process.  Try grep'ing for `org.springframework.boot.loader.JarLoader` instead.
 
 ### Logs
 
