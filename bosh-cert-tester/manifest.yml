@@ -1,0 +1,10 @@
+---
+applications:
+- name: bosh-cert-tester
+  memory: 128M
+  instances: 1
+  path: .
+  buildpack: binary_buildpack
+  command: ./app.sh
+  health-check-type: process
+  no-route: true
