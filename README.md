@@ -152,5 +152,9 @@ With that log file, you can use the build-graph.py script also included make sen
 
 To run the script, simply run `python build-graph.py <log-file-name> <pid>` (you can find the pid in your log file, look at the top output).  Please note that the script requires matplotlib and python-dateutils.  These can be installed by running `pip install matplotlib python-dateutils`.
 
+### Other Ways to get Java NMT Metrics
+
+Here's a couple other options for getting Java NMT metrics [[1](https://github.com/mcabaj/nmt-metrics)][[2](https://github.com/jtuchscherer/spring-music/tree/master/src/main/java/org/cloudfoundry/samples/music/nmt)].  These two examples implement the logic of my scripts above in Java and shell out to call `jcmd`.  The nice thing about this is that metrics can then be reported through Spring Boot actuator, assuming you're using Spring, or some other convenient way for your app to report metrics.
+
 ## License
 The cf-debug-tools project is released under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
