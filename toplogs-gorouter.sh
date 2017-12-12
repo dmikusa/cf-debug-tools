@@ -76,7 +76,7 @@ perl -n -e '/'"$apacheRx"'/ && print $2."/".$3."/".$4." ".$5.":".$6."\r\n"' "$1"
 printHeader 'Top '"$total"' Seconds'
 perl -n -e '/'"$apacheRx"'/ && print $2."/".$3."/".$4." ".$5.":".$6.":".$7."\r\n"' "$1" | sort | uniq -c | sort -nr | head -n "$total"
 
-printHeader 'Top '"$total"' Response Times'
+printHeader 'Top '"$total"' Response Times (secs)'
 perl -n -e '/'"$apacheRx"'/ && print $23."\n"' "$1" | xargs printf "%.0f\n" | sort -n | uniq -c | sort -nr | head -n "$total"
 
 exit 0
