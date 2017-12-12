@@ -2,47 +2,80 @@
 
 This project is a collection of scripts that can be used to help troubleshoot applications deployed to CloudFoundry.  See each script for more details.
 
-## Debug Console
+## GoRouter Access Log Stats
 
-This script downloads and installs [websocketd](https://github.com/joewalnes/websocketd).  It simply automates the steps described [here](http://www.iamjambay.com/2013/12/send-interactive-commands-to-cloud.html).
+The `toplogs-gorouter.sh` script can be used to read the access log from GoRouter and generate some helpful and commonly used metrics.  
 
-### Suggested Usage
+Included are top 10 lists of:
 
-The easiest way to use this script is with the ```--command``` argument of cf.
+   - response code
+   - request method
+   - request path
+   - request path w/query params
+   - user agent
+   - Referrer
+   - Remote Address
+   - Backend Address
+   - Client IP
+   - Destination Host
+   - Application UUID
+   - Request counts by day, hour, minute, second
+   - Response times rounded to the second
 
-Ex:
-
-```
-cf push -c 'curl -s https://raw.githubusercontent.com/dmikusa-pivotal/cf-debug-tools/master/debug-console.sh | bash' ...
-```
-
-This will instruct CF to run this command instead of your application.  Once run, the script will download websocketd and enable to you connect to it instead.  To connect access the application in your browser.  From there you'll see the web console and be able to connect.
-
-Ex:
-
-```
-https://<host>.<domain>:4443/bash.sh
-```
-
-Note that you're required to use HTTPS and access over port 4443, otherwise the WebSocket connection won't work.
-
-Another way to use this script would be to set it up to run on failure.
-
-Ex:
+### Usage
 
 ```
-cf push -c '<your normal command> || curl -s https://raw.githubusercontent.com/dmikusa-pivotal/cf-debug-tools/master/debug-console.sh | bash'
+toplogs-gorouter.sh <access.log> [list size:default 10]
 ```
 
-This should run your normal command and if it fails, download and run the debug console.  The advantage here is that you can poke around in the environment after your application has failed, perhaps giving you the chance to see why it failed.
+## Use profile.d to dump the JVM Native Memory
 
-### Additional Notes
+By using [start_dump.sh](start_dump.sh) and [dump.sh](dump.sh) along with [.profile.d](https://devcenter.heroku.com/articles/profiled#order), developers can do a regular native memory dump on JVM and print it on console.
 
-It's important to realize that this script is not secure in any way.  It simply opens up the console instead of your application.  Just as you can access this console, so can anyone else with the URL.  As such, be careful when and how you use this.
+### Todo
 
-### Other Options
+* Enable native memory tracking by setting JAVA_OPTS with -XX:NativeMemoryTracking=summary
+* Create a folder named with **.profile.d** in the home directory of the application
+* Put start_dump.sh inside of **.profile.d**
+* Put dump.sh in the home directory of the application
+* cf push from home directory of the application
 
-If you're looking for a shell running on CF, you could also look at [this example](https://github.com/dmikusa-pivotal/cf-ex-gotty).  It shows how to run [gotty](https://github.com/yudai/gotty) on CF.
+Sample File structure:
+
+```
+  .profile.d
+    - start_dump.sh
+  WEB-INF
+    - .....
+  dump.sh  
+```
+
+manifest:
+
+```
+---
+applications:
+- name: memory_test
+  memory: 800m
+  instances: 1
+  path: .
+  env:
+    JAVA_OPTS: -Djava.security.egd=file:///dev/urandom -XX:NativeMemoryTracking=summary -XX:+PrintHeapAtGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps
+```
+
+Note: If **dump.sh** is setup to look for a WAR file deployed to Tomcat.  If you're using Spring Boot, you need to adjust [this line](https://github.com/dmikusa-pivotal/cf-debug-tools/blob/master/dump.sh#L11) so that it finds your process.  Try grep'ing for `org.springframework.boot.loader.JarLoader` instead.
+
+### Logs
+
+When you run the dump.sh script and grab the Java NMT logs, there's a lot of output that get's generated.  The easiest way to handle this is to run `cf logs app-name > app-name.log` in a terminal before you start the app.  This will capture a complete set of logs from app startup until you see a problem.
+
+With that log file, you can use the build-graph.py script also included make sense of the logs.  The script will parse through and process the Java NMT stats, the output from top and any crashes it detects.  It will then generate graphs to show the memory usage as reported by those tools over time.
+
+To run the script, simply run `python build-graph.py <log-file-name> <pid>` (you can find the pid in your log file, look at the top output).  Please note that the script requires matplotlib and python-dateutils.  These can be installed by running `pip install matplotlib python-dateutils`.
+
+### Other Ways to get Java NMT Metrics
+
+Here's a couple other options for getting Java NMT metrics [[1](https://github.com/mcabaj/nmt-metrics)][[2](https://github.com/jtuchscherer/spring-music/tree/master/src/main/java/org/cloudfoundry/samples/music/nmt)].  These two examples implement the logic of my scripts above in Java and shell out to call `jcmd`.  The nice thing about this is that metrics can then be reported through Spring Boot actuator, assuming you're using Spring, or some other convenient way for your app to report metrics.
 
 ## SSH Tunnel
 
@@ -106,55 +139,6 @@ The following variables are optional.
 ### Additional Notes
 
 It's important to contemplate the security risks of using this script with your application.  You're packaging a non-password protected private key with your application.  If someone else were to get this key, he or she could connect to your SSH server in the same way that this script does.  Because of this it would be a good idea to rotate the keys often, revoke old keys from your `authorized_keys` file and to limit the access of the user on your SSH server (possibly even run it in a VM or container with nothing else).
-
-## Use profile.d to dump the JVM Native Memory
-
-By using [start_dump.sh](start_dump.sh) and [dump.sh](dump.sh) along with [.profile.d](https://devcenter.heroku.com/articles/profiled#order), developers can do a regular native memory dump on JVM and print it on console.
-
-### Todo
-
-* Enable native memory tracking by setting JAVA_OPTS with -XX:NativeMemoryTracking=summary
-* Create a folder named with **.profile.d** in the home directory of the application
-* Put start_dump.sh inside of **.profile.d**
-* Put dump.sh in the home directory of the application
-* cf push from home directory of the application
-
-Sample File structure:
-
-```
-  .profile.d
-    - start_dump.sh
-  WEB-INF
-    - .....
-  dump.sh  
-```
-
-manifest:
-
-```
----
-applications:
-- name: memory_test
-  memory: 800m
-  instances: 1
-  path: .
-  env:
-    JAVA_OPTS: -Djava.security.egd=file:///dev/urandom -XX:NativeMemoryTracking=summary -XX:+PrintHeapAtGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps
-```
-
-Note: If **dump.sh** is setup to look for a WAR file deployed to Tomcat.  If you're using Spring Boot, you need to adjust [this line](https://github.com/dmikusa-pivotal/cf-debug-tools/blob/master/dump.sh#L11) so that it finds your process.  Try grep'ing for `org.springframework.boot.loader.JarLoader` instead.
-
-### Logs
-
-When you run the dump.sh script and grab the Java NMT logs, there's a lot of output that get's generated.  The easiest way to handle this is to run `cf logs app-name > app-name.log` in a terminal before you start the app.  This will capture a complete set of logs from app startup until you see a problem.
-
-With that log file, you can use the build-graph.py script also included make sense of the logs.  The script will parse through and process the Java NMT stats, the output from top and any crashes it detects.  It will then generate graphs to show the memory usage as reported by those tools over time.
-
-To run the script, simply run `python build-graph.py <log-file-name> <pid>` (you can find the pid in your log file, look at the top output).  Please note that the script requires matplotlib and python-dateutils.  These can be installed by running `pip install matplotlib python-dateutils`.
-
-### Other Ways to get Java NMT Metrics
-
-Here's a couple other options for getting Java NMT metrics [[1](https://github.com/mcabaj/nmt-metrics)][[2](https://github.com/jtuchscherer/spring-music/tree/master/src/main/java/org/cloudfoundry/samples/music/nmt)].  These two examples implement the logic of my scripts above in Java and shell out to call `jcmd`.  The nice thing about this is that metrics can then be reported through Spring Boot actuator, assuming you're using Spring, or some other convenient way for your app to report metrics.
 
 ## License
 The cf-debug-tools project is released under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
