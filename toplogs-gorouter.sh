@@ -6,24 +6,41 @@
 #
 set -e  # dont add `-o pipefail`, this will cause false errors
 
-printf "Assumes standard GoRouter access log format:\n\n"
-# This format is a bit fluid.  Everything after `app_index` is "additional headers" that may or may not be present.  It defaults to what should work for PCF, but may need to be adjusted for other situations.
-echo '<Request Host> - [<Start Date>] "<Request Method> <Request URL> <Request Protocol>" <Status Code> <Bytes Received> <Bytes Sent> "<Referer>" "<User-Agent>" <Remote Address> <Backend Address> x_forwarded_for:"<X-Forwarded-For>" x_forwarded_proto:"<X-Forwarded-Proto>" vcap_request_id:<X-Vcap-Request-ID> response_time:<Response Time> app_id:<Application ID> app_index:<Application Index> x_b3_traceid:<zipkin-trace> x_b3_spandid:<zipkin-span> x_b3_parentspanid:<zipkin-spanid>'
+LOGREGEX='^(.*?) - \[(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d+)(.*?)] "(.*?) (.*?) (.*?)" (\d+) (\d+) (\d+) "(.*?)" "(.*?)" "(.*?)" "(.*?)" x_forwarded_for:"(.*?)" x_forwarded_proto:"(.*?)" vcap_request_id:"(.*?)" response_time:(\d+\.\d+) app_id:"(.*?)" app_index:"(.*?)" x_b3_traceid:"(.*?)" x_b3_spanid:"(.*?)" x_b3_parentspanid:"(.*?)"$'
 
-apacheRx='^(.*?) - \[(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d+)(.*?)] "(.*?) (.*?) (.*?)" (\d+) (\d+) (\d+) "(.*?)" "(.*?)" "(.*?)" "(.*?)" x_forwarded_for:"(.*?)" x_forwarded_proto:"(.*?)" vcap_request_id:"(.*?)" response_time:(\d+\.\d+) app_id:"(.*?)" app_index:"(.*?)" x_b3_traceid:"(.*?)" x_b3_spanid:"(.*?)" x_b3_parentspanid:"(.*?)"$'
+# parse out args
+#  - https://stackoverflow.com/a/14203146/1585136
+TOP=10
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        -t|--top)
+        TOP="$2"
+        shift
+        shift
+        ;;
+    *)
+    POSITIONAL+=("$1")
+    shift
+    ;;
+esac
+done
+set -- "${POSITIONAL[@]}"
 
-if [ $# -eq 0 ]; then
-    echo "Usage (for top 10):"
-    echo "toplogs-gorouter.sh access.log 10"
+usage () {
+    echo "USAGE:"
+    echo "toplogs-gorouter.sh [-t|--top 10] <file1> <file2> <file3> ..."
+    echo ""
+    echo "    -t|--top - defaults to 10, sets the number of results to return"
+    echo ""
+    echo "NOTES:"
+    echo "  Assumes standard GoRouter access log format:"
+    echo '    <Request Host> - [<Start Date>] "<Request Method> <Request URL> <Request Protocol>" <Status Code> <Bytes Received> <Bytes Sent> "<Referer>" "<User-Agent>" <Remote Address> <Backend Address> x_forwarded_for:"<X-Forwarded-For>" x_forwarded_proto:"<X-Forwarded-Proto>" vcap_request_id:<X-Vcap-Request-ID> response_time:<Response Time> app_id:<Application ID> app_index:<Application Index> x_b3_traceid:<zipkin-trace> x_b3_spandid:<zipkin-span> x_b3_parentspanid:<zipkin-spanid>'
+    echo ""
+    echo "  It's also worth noting that this format is fluid.  Everything after \`app_index\` is \"additional headers\" that may or may not be present.  It defaults to what should work for PCF, but may need to be adjusted for other situations."
     exit 1
-fi
-
-if [ -z "$2" ]
-then
-	total=10
-else
-	total=$2
-fi
+}
 
 printHeader () {
     printf "\n--------------------------------------\n"
@@ -31,52 +48,54 @@ printHeader () {
     printf "\n--------------------------------------\n\n"
 }
 
-printHeader 'Response Codes'
-perl -n -e '/'"$apacheRx"'/ && print $13."\r\n"' "$1" | sort | uniq -c | sort -nr
+main () {
+    printHeader 'Response Codes'
+    perl -n -e '/'"$LOGREGEX"'/ && print $13."\r\n"' <( cat "$@" ) | sort | uniq -c | sort -nr
 
-printHeader 'Request Methods'
-perl -n -e '/'"$apacheRx"'/ && print $10."\r\n"' "$1" | sort | uniq -c | sort -nr
+    printHeader 'Request Methods'
+    perl -n -e '/'"$LOGREGEX"'/ && print $10."\r\n"' <( cat "$@" ) | sort | uniq -c | sort -nr
 
-printHeader 'Top '"$total"' Requests (no query params)'
-perl -n -e '/'"$apacheRx"'/ && print $11."\r\n"' "$1" | cut -d '?' -f 1 | sort | uniq -c | sort -nr | head -n "$total"
+    printHeader 'Top '"$TOP"' Requests (no query params)'
+    perl -n -e '/'"$LOGREGEX"'/ && print $11."\r\n"' <( cat "$@" ) | cut -d '?' -f 1 | sort | uniq -c | sort -nr | head -n "$TOP"
 
-printHeader 'Top '"$total"' Requests (with query params)'
-perl -n -e '/'"$apacheRx"'/ && print $11."\r\n"' "$1" | sort | uniq -c | sort -nr | head -n "$total"
+    printHeader 'Top '"$TOP"' Requests (with query params)'
+    perl -n -e '/'"$LOGREGEX"'/ && print $11."\r\n"' <( cat "$@" ) | sort | uniq -c | sort -nr | head -n "$TOP"
 
-printHeader 'Top '"$total"' User Agents'
-perl -n -e '/'"$apacheRx"'/ && print $17."\r\n"' "$1" | sort | uniq -c | sort -nr | head -n "$total"
+    printHeader 'Top '"$TOP"' User Agents'
+    perl -n -e '/'"$LOGREGEX"'/ && print $17."\r\n"' <( cat "$@" ) | sort | uniq -c | sort -nr | head -n "$TOP"
 
-printHeader 'Top '"$total"' Referrers'
-perl -n -e '/'"$apacheRx"'/ && print $16."\r\n"' "$1" | sort | uniq -c | sort -nr | head -n "$total"
+    printHeader 'Top '"$TOP"' Referrers'
+    perl -n -e '/'"$LOGREGEX"'/ && print $16."\r\n"' <( cat "$@" ) | sort | uniq -c | sort -nr | head -n "$TOP"
 
-printHeader 'Top '"$total"' Remote Address (LBs)'
-perl -n -e '/'"$apacheRx"'/ && print $18."\r\n"' "$1" | cut -d ':' -f 1 | sort | uniq -c | sort -nr | head -n "$total"
+    printHeader 'Top '"$TOP"' Remote Address (LBs)'
+    perl -n -e '/'"$LOGREGEX"'/ && print $18."\r\n"' <( cat "$@" ) | cut -d ':' -f 1 | sort | uniq -c | sort -nr | head -n "$TOP"
 
-printHeader 'Top '"$total"' Backend Address (Cells & Platform VMs)'
-perl -n -e '/'"$apacheRx"'/ && print $19."\r\n"' "$1" | sort | uniq -c | sort -nr | head -n "$total"
+    printHeader 'Top '"$TOP"' Backend Address (Cells & Platform VMs)'
+    perl -n -e '/'"$LOGREGEX"'/ && print $19."\r\n"' <( cat "$@" ) | sort | uniq -c | sort -nr | head -n "$TOP"
 
-printHeader 'Top '"$total"' Client IPs'
-perl -n -e '/'"$apacheRx"'/ && print $20."\r\n"' "$1" | sort | uniq -c | sort -nr | head -n "$total"
+    printHeader 'Top '"$TOP"' Client IPs'
+    perl -n -e '/'"$LOGREGEX"'/ && print $20."\r\n"' <( cat "$@" ) | sort | uniq -c | sort -nr | head -n "$TOP"
 
-printHeader 'Top '"$total"' Destination Hosts'
-perl -n -e '/'"$apacheRx"'/ && print $1."\r\n"' "$1" | sort | uniq -c | sort -nr | head -n "$total"
+    printHeader 'Top '"$TOP"' Destination Hosts'
+    perl -n -e '/'"$LOGREGEX"'/ && print $1."\r\n"' <( cat "$@" ) | sort | uniq -c | sort -nr | head -n "$TOP"
 
-printHeader 'Top '"$total"' Application UUIDs'
-perl -n -e '/'"$apacheRx"'/ && print $24."\r\n"' "$1" | sort | uniq -c | sort -nr | head -n "$total"
+    printHeader 'Top '"$TOP"' Application UUIDs'
+    perl -n -e '/'"$LOGREGEX"'/ && print $24."\r\n"' <( cat "$@" ) | sort | uniq -c | sort -nr | head -n "$TOP"
 
-printHeader 'Top '"$total"' Days'
-perl -n -e '/'"$apacheRx"'/ && print $2."/".$3."/".$4."\r\n"' "$1" | sort | uniq -c | sort -nr | head -n "$total"
+    printHeader 'Top '"$TOP"' Days'
+    perl -n -e '/'"$LOGREGEX"'/ && print $2."/".$3."/".$4."\r\n"' <( cat "$@" ) | sort | uniq -c | sort -nr | head -n "$TOP"
 
-printHeader 'Top '"$total"' Hours'
-perl -n -e '/'"$apacheRx"'/ && print $2."/".$3."/".$4." ".$5."\r\n"' "$1" | sort | uniq -c | sort -nr | head -n "$total"
+    printHeader 'Top '"$TOP"' Hours'
+    perl -n -e '/'"$LOGREGEX"'/ && print $2."/".$3."/".$4." ".$5."\r\n"' <( cat "$@" ) | sort | uniq -c | sort -nr | head -n "$TOP"
 
-printHeader 'Top '"$total"' Minutes'
-perl -n -e '/'"$apacheRx"'/ && print $2."/".$3."/".$4." ".$5.":".$6."\r\n"' "$1" | sort | uniq -c | sort -nr | head -n "$total"
+    printHeader 'Top '"$TOP"' Minutes'
+    perl -n -e '/'"$LOGREGEX"'/ && print $2."/".$3."/".$4." ".$5.":".$6."\r\n"' <( cat "$@" ) | sort | uniq -c | sort -nr | head -n "$TOP"
 
-printHeader 'Top '"$total"' Seconds'
-perl -n -e '/'"$apacheRx"'/ && print $2."/".$3."/".$4." ".$5.":".$6.":".$7."\r\n"' "$1" | sort | uniq -c | sort -nr | head -n "$total"
+    printHeader 'Top '"$TOP"' Seconds'
+    perl -n -e '/'"$LOGREGEX"'/ && print $2."/".$3."/".$4." ".$5.":".$6.":".$7."\r\n"' <( cat "$@" ) | sort | uniq -c | sort -nr | head -n "$TOP"
 
-printHeader 'Top '"$total"' Response Times (secs)'
-perl -n -e '/'"$apacheRx"'/ && print $23."\n"' "$1" | xargs printf "%.0f\n" | sort -n | uniq -c | sort -nr | head -n "$total"
+    printHeader 'Top '"$TOP"' Response Times (secs)'
+    perl -n -e '/'"$LOGREGEX"'/ && print $23."\n"' <( cat "$@" ) | xargs printf "%.0f\n" | sort -n | uniq -c | sort -nr | head -n "$TOP"
+}
 
-exit 0
+main "$@"
