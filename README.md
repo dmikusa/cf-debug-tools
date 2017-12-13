@@ -2,7 +2,7 @@
 
 This project is a collection of scripts that can be used to help troubleshoot applications deployed to CloudFoundry.  See each script for more details.
 
-  * [Cloud Controller & GoRouter Access Log Stats](#cloud-controller---gorouter-access-log-stats)
+  * [Cloud Controller & GoRouter Access Log Stats](#cloud-controller--gorouter-access-log-stats)
     + [Usage](#usage)
   * [Use profile.d to dump the JVM Native Memory](#use-profiled-to-dump-the-jvm-native-memory)
     + [Todo](#todo)
