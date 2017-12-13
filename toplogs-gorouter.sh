@@ -47,7 +47,7 @@ while [[ $# -gt 0 ]]; do
 esac
 done
 
-if [ ${#array[@]} -eq 0 ]; then
+if [ ${#POSITIONAL[@]} -eq 0 ]; then
     usage
 fi
 
