@@ -8,26 +8,6 @@ set -e  # dont add `-o pipefail`, this will cause false errors
 
 LOGREGEX='^(.*?) - \[(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d+)(.*?)] "(.*?) (.*?) (.*?)" (\d+) (\d+) (\d+) "(.*?)" "(.*?)" "(.*?)" "(.*?)" x_forwarded_for:"(.*?)" x_forwarded_proto:"(.*?)" vcap_request_id:"(.*?)" response_time:(\d+\.\d+) app_id:"(.*?)" app_index:"(.*?)" x_b3_traceid:"(.*?)" x_b3_spanid:"(.*?)" x_b3_parentspanid:"(.*?)"$'
 
-# parse out args
-#  - https://stackoverflow.com/a/14203146/1585136
-TOP=10
-POSITIONAL=()
-while [[ $# -gt 0 ]]; do
-    key="$1"
-    case $key in
-        -t|--top)
-        TOP="$2"
-        shift
-        shift
-        ;;
-    *)
-    POSITIONAL+=("$1")
-    shift
-    ;;
-esac
-done
-set -- "${POSITIONAL[@]}"
-
 usage () {
     echo "USAGE:"
     echo "toplogs-gorouter.sh [-t|--top 10] <file1> <file2> <file3> ..."
@@ -47,6 +27,31 @@ printHeader () {
     printf "%s" "$1"
     printf "\n--------------------------------------\n\n"
 }
+
+# parse out args
+#  - https://stackoverflow.com/a/14203146/1585136
+TOP=10
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        -t|--top)
+        TOP="$2"
+        shift
+        shift
+        ;;
+    *)
+    POSITIONAL+=("$1")
+    shift
+    ;;
+esac
+done
+
+if [ ${#array[@]} -eq 0 ]; then
+    usage
+fi
+
+set -- "${POSITIONAL[@]}"
 
 main () {
     printHeader 'Response Codes'

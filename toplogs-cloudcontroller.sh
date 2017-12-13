@@ -8,6 +8,24 @@ set -e  # dont add `-o pipefail`, this will cause false errors
 
 LOGREGEX='^(.*?) - \[(\d{2})\/(\w{3})\/(\d{4}):(\d{2}):(\d{2}):(\d{2}) (.*?)\] "(.*?) (.*?) (.*?)" (\d+) (\d+) "(.*?)" "(.*?)" (.*?) vcap_request_id:(.*?) response_time:(\d+\.\d+)$'
 
+usage () {
+    echo "USAGE:"
+    echo "toplogs-cloudcontroller.sh [-t|--top 10] <file1> <file2> <file3> ..."
+    echo ""
+    echo "    -t|--top - defaults to 10, sets the number of results to return"
+    echo ""
+    echo "NOTES:"
+    echo "  Assumes standard CloudController Nginx access log format:"
+    echo '    <client ip> - [<date>:<time>] "<method> <request path> <http version>" <status code> <bytes> "<referrer" "<user agent>" <x-forwarded-for> vcap_request_id:<reqest_id> response_time:<response_time>'
+    exit 1
+}
+
+printHeader () {
+    printf "\n--------------------------------------\n"
+    printf "  %s" "$1"
+    printf "\n--------------------------------------\n\n"
+}
+
 # parse out args
 #  - https://stackoverflow.com/a/14203146/1585136
 TOP=10
@@ -26,25 +44,12 @@ while [[ $# -gt 0 ]]; do
     ;;
 esac
 done
+
+if [ ${#array[@]} -eq 0 ]; then
+    usage
+fi
+
 set -- "${POSITIONAL[@]}"
-
-usage () {
-    echo "USAGE:"
-    echo "toplogs-cloudcontroller.sh [-t|--top 10] <file1> <file2> <file3> ..."
-    echo ""
-    echo "    -t|--top - defaults to 10, sets the number of results to return"
-    echo ""
-    echo "NOTES:"
-    echo "  Assumes standard CloudController Nginx access log format:"
-    echo '    <client ip> - [<date>:<time>] "<method> <request path> <http version>" <status code> <bytes> "<referrer" "<user agent>" <x-forwarded-for> vcap_request_id:<reqest_id> response_time:<response_time>'
-    exit 1
-}
-
-printHeader () {
-    printf "\n--------------------------------------\n"
-    printf "  %s" "$1"
-    printf "\n--------------------------------------\n\n"
-}
 
 main () {
     printHeader 'Response Codes'
