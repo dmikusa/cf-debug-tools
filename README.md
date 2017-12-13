@@ -2,6 +2,19 @@
 
 This project is a collection of scripts that can be used to help troubleshoot applications deployed to CloudFoundry.  See each script for more details.
 
+  * [Cloud Controller & GoRouter Access Log Stats](#cloud-controller---gorouter-access-log-stats)
+    + [Usage](#usage)
+  * [Use profile.d to dump the JVM Native Memory](#use-profiled-to-dump-the-jvm-native-memory)
+    + [Todo](#todo)
+    + [Logs](#logs)
+    + [Other Ways to get Java NMT Metrics](#other-ways-to-get-java-nmt-metrics)
+  * [SSH Tunnel](#ssh-tunnel)
+    + [Prerequisites & Setup](#prerequisites---setup)
+    + [Suggested Usage](#suggested-usage)
+    + [Configuration](#configuration)
+    + [Additional Notes](#additional-notes)
+  * [License](#license)
+
 ## Cloud Controller & GoRouter Access Log Stats
 
 The `toplogs-gorouter.sh` and `toplogs-cloudcontroller.sh` scripts can be used to read the access log from GoRouter or Cloud Controller Nginx and generate some helpful and commonly used metrics.  
