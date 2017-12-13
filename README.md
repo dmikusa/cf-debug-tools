@@ -2,16 +2,16 @@
 
 This project is a collection of scripts that can be used to help troubleshoot applications deployed to CloudFoundry.  See each script for more details.
 
-## GoRouter Access Log Stats
+## Cloud Controller & GoRouter Access Log Stats
 
-The `toplogs-gorouter.sh` script can be used to read the access log from GoRouter and generate some helpful and commonly used metrics.  
+The `toplogs-gorouter.sh` and `toplogs-cloudcontroller.sh` scripts can be used to read the access log from GoRouter or Cloud Controller Nginx and generate some helpful and commonly used metrics.  
 
-Included are top 10 lists of:
+Included for GoRouter are top 10 lists of:
 
-   - response code
-   - request method
-   - request path
-   - request path w/query params
+   - response codes
+   - request methods
+   - request paths
+   - request paths w/query params
    - user agent
    - Referrer
    - Remote Address
@@ -22,10 +22,43 @@ Included are top 10 lists of:
    - Request counts by day, hour, minute, second
    - Response times rounded to the second
 
+Include for Cloud Controller are top 10 lists of:
+
+  - response codes
+  - request methods
+  - request paths
+  - request paths w/query params
+  - user agents
+  - referrers
+  - forwarded IPs
+  - direct client IP
+  - Request counts by day, hour, minute, second
+  - response times rounded to the second
+
 ### Usage
 
 ```
-toplogs-gorouter.sh <access.log> [list size:default 10]
+USAGE:
+toplogs-gorouter.sh [-t|--top 10] <file1> <file2> <file3> ...
+
+    -t|--top - defaults to 10, sets the number of results to return
+
+NOTES:
+  Assumes standard GoRouter access log format:
+    <Request Host> - [<Start Date>] "<Request Method> <Request URL> <Request Protocol>" <Status Code> <Bytes Received> <Bytes Sent> "<Referer>" "<User-Agent>" <Remote Address> <Backend Address> x_forwarded_for:"<X-Forwarded-For>" x_forwarded_proto:"<X-Forwarded-Proto>" vcap_request_id:<X-Vcap-Request-ID> response_time:<Response Time> app_id:<Application ID> app_index:<Application Index> x_b3_traceid:<zipkin-trace> x_b3_spandid:<zipkin-span> x_b3_parentspanid:<zipkin-spanid>
+
+  It's also worth noting that this format is fluid.  Everything after `app_index` is "additional headers" that may or may not be present.  It defaults to what should work for PCF, but may need to be adjusted for other situations.
+```
+
+```
+USAGE:
+toplogs-cloudcontroller.sh [-t|--top 10] <file1> <file2> <file3> ...
+
+    -t|--top - defaults to 10, sets the number of results to return
+
+NOTES:
+  Assumes standard CloudController Nginx access log format:
+    <client ip> - [<date>:<time>] "<method> <request path> <http version>" <status code> <bytes> "<referrer" "<user agent>" <x-forwarded-for> vcap_request_id:<reqest_id> response_time:<response_time>
 ```
 
 ## Use profile.d to dump the JVM Native Memory
