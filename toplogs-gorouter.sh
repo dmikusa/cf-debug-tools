@@ -14,7 +14,7 @@ apacheRx='^(.*?) - \[(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d+)(.*?)]
 
 if [ $# -eq 0 ]; then
     echo "Usage (for top 10):"
-    echo "toplogs.sh access.log 10"
+    echo "toplogs-gorouter.sh access.log 10"
     exit 1
 fi
 
