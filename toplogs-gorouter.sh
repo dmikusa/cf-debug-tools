@@ -54,6 +54,9 @@ fi
 set -- "${POSITIONAL[@]}"
 
 main () {
+    printHeader 'Duration'
+    perl -n -e '/'"$LOGREGEX"'/ && print $2."/".$3."/".$4." ".$5.":".$6.":".$7."\r\n"' <( cat "$@" ) | sort | sed -e 1b -e '$!d'
+
     printHeader 'Response Codes'
     perl -n -e '/'"$LOGREGEX"'/ && print $13."\r\n"' <( cat "$@" ) | sort | uniq -c | sort -nr
 
