@@ -45,9 +45,23 @@ while [[ $# -gt 0 ]]; do
 esac
 done
 
+re='^[0-9]+$'
+if ! [[ $TOP =~ $re ]]; then
+    usage
+fi
+
 if [ ${#POSITIONAL[@]} -eq 0 ]; then
     usage
 fi
+
+set -- "${POSITIONAL[@]}"
+
+while [[ $# -gt 0 ]]; do
+    if [ ! -f $1 ]; then
+       usage
+    fi
+    shift
+done
 
 set -- "${POSITIONAL[@]}"
 
