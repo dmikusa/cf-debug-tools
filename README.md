@@ -4,7 +4,7 @@ This project is a collection of scripts that can be used to help troubleshoot ap
 
   * [Cloud Controller & GoRouter Access Log Stats](#cloud-controller--gorouter-access-log-stats)
     + [Usage](#usage)
-  * [Use .profile to dump the JVM Native Memory](#use-profiled-to-dump-the-jvm-native-memory)
+  * [Use .profile to dump the JVM Native Memory](#use-profile-to-dump-the-jvm-native-memory)
     + [Logs](#logs)
     + [Other Ways to get Java NMT Metrics](#other-ways-to-get-java-nmt-metrics)
   * [SSH Tunnel](#ssh-tunnel)
