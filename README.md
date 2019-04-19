@@ -74,42 +74,39 @@ NOTES:
     <client ip> - [<date>:<time>] "<method> <request path> <http version>" <status code> <bytes> "<referrer" "<user agent>" <x-forwarded-for> vcap_request_id:<reqest_id> response_time:<response_time>
 ```
 
-## Use profile.d to dump the JVM Native Memory
+## Use .profile to dump the JVM Native Memory
 
-By using [start_dump.sh](start_dump.sh) and [dump.sh](dump.sh) along with [.profile.d](https://devcenter.heroku.com/articles/profiled#order), developers can do a regular native memory dump on JVM and print it on console.
+Instructions:
 
-### Todo
+1. Download [start_dump.sh](start_dump.sh) and rename it `.profile`. Place it at the root of your project.
+2. Download [dump.sh](dump.sh) and place it at the root of your project (you can place it elsewhere, but you need to modify the `.profile` script from step #1 to reference it in the location where you put `dump.sh`).
+2. Build your JAR/WAR file.
+3. Run `jar uf path/to/your-app.jar .profile dump.sh`.
+4. Run `jar tf path/to/your-app.jar`. In the output you should see `.profile` and `dump.sh` listed. The `.profile` script *must* be listed in the root of the JAR/WAR. The other should be at the relative location referenced from the `.profile` script.
+5. Run `cf push` on your modified JAR file. The `.profile` script will run prior to the app starting up. It will kick off the `dump.sh` script to run in the background. Then your app will start. Because this all happens as the app is starting, all output from these will go to STDOUT/STDERR and show up in the app's log stream (i.e. `cf logs`).
 
-* Enable native memory tracking by setting JAVA_OPTS with -XX:NativeMemoryTracking=summary
-* Create a folder named with **.profile.d** in the home directory of the application
-* Put start_dump.sh inside of **.profile.d**
-* Put dump.sh in the home directory of the application
-* cf push from home directory of the application
-
-Sample File structure:
+Sample JAR/WAR File structure:
 
 ```
-  .profile.d
-    - start_dump.sh
-  WEB-INF
-    - .....
-  dump.sh  
+  .profile
+  WEB-INF/
+    - <your-app-files>
+  dump.sh
 ```
 
-manifest:
+manifest.yml:
 
 ```
 ---
 applications:
 - name: memory_test
-  memory: 800m
-  instances: 1
-  path: .
+  memory: 1G
+  path: path/to/app.jar
   env:
     JAVA_OPTS: -Djava.security.egd=file:///dev/urandom -XX:NativeMemoryTracking=summary -XX:+PrintHeapAtGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps
 ```
 
-Note: If **dump.sh** is setup to look for a WAR file deployed to Tomcat.  If you're using Spring Boot, you need to adjust [this line](https://github.com/dmikusa-pivotal/cf-debug-tools/blob/master/dump.sh#L11) so that it finds your process.  Try grep'ing for `org.springframework.boot.loader.JarLoader` instead.
+Note: **dump.sh** is setup to look for a WAR file deployed to Tomcat.  If you're using Spring Boot, you need to adjust [this line](https://github.com/dmikusa-pivotal/cf-debug-tools/blob/master/dump.sh#L11) so that it finds your process.  Try grep'ing for `org.springframework.boot.loader.JarLoader` instead.
 
 ### Logs
 
