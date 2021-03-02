@@ -6,7 +6,7 @@
 #
 set -e  # dont add `-o pipefail`, this will cause false errors
 
-LOGREGEX='^(.*?) - \[(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d+)(.*?)] "(.*?) (.*?) (.*?)" (\d+) (\d+) (\d+) "(.*?)" "(.*?)" "(.*?)" "(.*?)" x_forwarded_for:"(.*?)" x_forwarded_proto:"(.*?)" vcap_request_id:"(.*?)" response_time:(\d+\.\d+) app_id:"(.*?)" app_index:"(.*?)" x_b3_traceid:"(.*?)" x_b3_spanid:"(.*?)" x_b3_parentspanid:"(.*?)"$'
+LOGREGEX='^(.*?) - \[(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d+)(.*?)] "(.*?) (.*?) (.*?)" (\d+) (\d+) (\d+) "(.*?)" "(.*?)" "(.*?)" "(.*?)" x_forwarded_for:"(.*?)" x_forwarded_proto:"(.*?)" vcap_request_id:"(.*?)" response_time:(\d+\.\d+) gorouter_time:(\d+\.\d+) app_id:"(.*?)" app_index:"(.*?)" x_b3_traceid:"(.*?)" x_b3_spanid:"(.*?)" x_b3_parentspanid:"(.*?)"$'
 
 usage () {
     echo "USAGE:"
